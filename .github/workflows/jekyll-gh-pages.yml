@@ -52,13 +52,11 @@ jobs:
         run: |
           chmod -R u+w /tmp/site_copy
 
-      # Use rsync to sync modified files back to _site
-      - name: Sync modified files back to _site
-        run: |
-          rsync -av /tmp/site_copy/ ./_site/
-
-      - name: Upload artifact
+      # Deploy directly from the /tmp/site_copy directory instead of _site
+      - name: Upload artifact for deployment
         uses: actions/upload-pages-artifact@v3
+        with:
+          path: /tmp/site_copy/
 
   deploy:
     environment:
