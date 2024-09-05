@@ -35,10 +35,11 @@ jobs:
         with:
           source: ./
           destination: ./_site
-      
+
       # Echo the Google Tag ID to confirm it's being retrieved correctly
       - name: Debug - Echo Google Tag ID
-        run: echo "Google Tag ID: ${{ secrets.GOOGLE_TAG_ID }}"
+        run: |
+          echo "Google Tag ID: ${{ secrets.GOOGLE_TAG_ID }}"
 
       # Use sed to inject Google Tag ID into HTML files
       - name: Inject Google Tag ID
