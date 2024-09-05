@@ -1,4 +1,3 @@
-# Sample workflow for building and deploying a Jekyll site to GitHub Pages
 name: Deploy Jekyll with GitHub Pages dependencies preinstalled
 
 on:
@@ -20,39 +19,50 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      # Step 1: Checkout the repository
       - name: Checkout
         uses: actions/checkout@v4
+
+      # Step 2: Setup GitHub Pages
       - name: Setup Pages
         uses: actions/configure-pages@v5
+
+      # Step 3: Build the Jekyll site
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1
         with:
           source: ./
           destination: ./_site
 
-      # Copy the _site folder to /tmp so we can modify the files
+      # Step 4: Copy the _site folder to /tmp for modification
       - name: Copy _site folder to /tmp
         run: |
           cp -r ./_site /tmp/site_copy
 
-      # Echo the Google Tag ID to confirm it's being retrieved correctly
+      # Step 5: Echo the Google Tag ID to confirm it's being retrieved correctly
       - name: Debug - Echo Google Tag ID
         run: |
           echo "Google Tag ID: ${{ secrets.GOOGLE_TAG_ID }}"
 
-      # Use sed to inject Google Tag ID into HTML files (no -i)
+      # Step 6: Inject Google Tag ID into HTML files
       - name: Inject Google Tag ID
         run: |
           TAG_ID=${{ secrets.GOOGLE_TAG_ID }}
           echo "Replacing GOOGLE_TAG_ID_PLACEHOLDER with $TAG_ID"
           find /tmp/site_copy -name "*.html" -exec sh -c 'sed "s/GOOGLE_TAG_ID_PLACEHOLDER/$TAG_ID/g" "$1" > "$1.tmp" && mv "$1.tmp" "$1"' _ {} \;
 
-      # Change permissions of the files in the temp directory
+      # Step 7: Verify that the Google Tag ID was injected properly
+      - name: Verify Tag Injection
+        run: |
+          TAG_ID=${{ secrets.GOOGLE_TAG_ID }}
+          grep -r "googletagmanager.com/gtag/js?id=$TAG_ID" /tmp/site_copy || echo "Tag ID not found"
+
+      # Step 8: Change permissions of the files in the temp directory
       - name: Change file permissions in /tmp/site_copy
         run: |
           chmod -R u+w /tmp/site_copy
 
-      # Deploy directly from the /tmp/site_copy directory instead of _site
+      # Step 9: Upload artifact for deployment from /tmp/site_copy
       - name: Upload artifact for deployment
         uses: actions/upload-pages-artifact@v3
         with:
@@ -65,6 +75,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
+      # Step 10: Deploy to GitHub Pages
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
