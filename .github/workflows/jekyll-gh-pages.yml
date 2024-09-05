@@ -36,6 +36,11 @@ jobs:
           source: ./
           destination: ./_site
 
+      # Ensure correct permissions for _site directory
+      - name: Ensure correct permissions for _site directory
+        run: chmod -R u+w ./_site
+
+      # Inject the Google Tag ID from the secret into your HTML files
       - name: Inject Google Tag ID
         run: |
           TAG_ID=${{ secrets.GOOGLE_TAG_ID }}
