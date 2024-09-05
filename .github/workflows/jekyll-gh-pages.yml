@@ -1,84 +1,44 @@
+# Sample workflow for building and deploying a Jekyll site to GitHub Pages
 name: Deploy Jekyll with GitHub Pages dependencies preinstalled
 
 on:
+  # Runs on pushes targeting the default branch
   push:
     branches: ["main"]
 
+  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
   contents: read
   pages: write
   id-token: write
 
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
 concurrency:
   group: "pages"
   cancel-in-progress: false
 
 jobs:
+  # Build job
   build:
     runs-on: ubuntu-latest
     steps:
-      # Step 1: Checkout the repository
       - name: Checkout
         uses: actions/checkout@v4
-
-      # Step 2: Setup GitHub Pages
       - name: Setup Pages
         uses: actions/configure-pages@v5
-
-      # Step 3: Build the Jekyll site
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1
         with:
           source: ./
           destination: ./_site
-
-      # Step 4: Copy the _site folder to /tmp for modification
-      - name: Copy _site folder to /tmp
-        run: |
-          cp -r ./_site /tmp/site_copy
-
-      # Step 5: Debug - Echo the Google Tag ID to confirm it's being retrieved correctly (masked in logs)
-      - name: Debug - Echo Google Tag ID
-        run: |
-          echo "Google Tag ID: ${{ secrets.GA }}"
-
-      # Step 6: Inject Google Tag ID into HTML files
-      - name: Inject Google Tag ID into HTML
-        run: |
-          TAG_ID=${{ secrets.GA }}
-          echo "Injecting Google Tag ID into HTML files"
-          find /tmp/site_copy -name "*.html" -exec sh -c 'sed "s/GOOGLE_TAG_ID_PLACEHOLDER/$TAG_ID/g" "$1" > "$1.tmp" && mv "$1.tmp" "$1"' _ {} \;
-
-      # Step 7: Verify that the Google Tag ID was injected properly
-      - name: Verify Tag Injection
-        run: |
-          TAG_ID=${{ secrets.GA }}
-
-          # Echo file content to debug
-          echo "File content after injection:"
-          cat /tmp/site_copy/index.html | grep "googletagmanager.com/gtag/js?id="
-
-          # Check if the Google Tag ID is in the HTML file
-          if grep -q "googletagmanager.com/gtag/js?id=$TAG_ID" /tmp/site_copy/index.html; then
-            echo "Google Tag ID was successfully injected into the HTML."
-          else
-            echo "Google Tag ID was not injected."
-            exit 1
-          fi
-
-      # Step 8: Change permissions of the files in the temp directory
-      - name: Change file permissions in /tmp/site_copy
-        run: |
-          chmod -R u+w /tmp/site_copy
-
-      # Step 9: Upload artifact for deployment from /tmp/site_copy
-      - name: Upload artifact for deployment
+      - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
-        with:
-          path: /tmp/site_copy/
 
+  # Deployment job
   deploy:
     environment:
       name: github-pages
@@ -86,7 +46,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      # Step 10: Deploy to GitHub Pages
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
