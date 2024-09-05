@@ -35,12 +35,17 @@ jobs:
         with:
           source: ./
           destination: ./_site
+      
+      # Echo the Google Tag ID to confirm it's being retrieved correctly
+      - name: Debug - Echo Google Tag ID
+        run: echo "Google Tag ID: ${{ secrets.GOOGLE_TAG_ID }}"
 
-      # Use sed without -i flag and move files to replace the originals
+      # Use sed to inject Google Tag ID into HTML files
       - name: Inject Google Tag ID
         run: |
           TAG_ID=${{ secrets.GOOGLE_TAG_ID }}
-          find ./_site -name "*.html" -exec sh -c 'sed "s/GOOGLE_TAG_ID_PLACEHOLDER/$TAG_ID/g" "$1" > "$1.tmp" && mv "$1.tmp" "$1"' _ {} \;
+          echo "Replacing GOOGLE_TAG_ID_PLACEHOLDER with $TAG_ID"
+          find ./_site -name "*.html" -exec sed -i "s/GOOGLE_TAG_ID_PLACEHOLDER/$TAG_ID/g" {} +
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
