@@ -36,15 +36,11 @@ jobs:
           source: ./
           destination: ./_site
 
-      # Ensure correct permissions for _site directory
-      - name: Ensure correct permissions for _site directory
-        run: chmod -R u+w ./_site
-
-      # Inject the Google Tag ID from the secret into your HTML files
+      # Only target HTML files
       - name: Inject Google Tag ID
         run: |
           TAG_ID=${{ secrets.GOOGLE_TAG_ID }}
-          find ./_site -name "*.html" -exec sed -i "s/GOOGLE_TAG_ID_PLACEHOLDER/$TAG_ID/g" {} +
+          find ./_site -type f -name "*.html" -exec sed -i "s/GOOGLE_TAG_ID_PLACEHOLDER/$TAG_ID/g" {} +
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
