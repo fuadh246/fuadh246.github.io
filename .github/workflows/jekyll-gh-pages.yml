@@ -47,14 +47,14 @@ jobs:
       # Step 6: Inject Google Tag ID into HTML files
       - name: Inject Google Tag ID
         run: |
-          TAG_ID=${{secrets.GA}}
+          TAG_ID:${{secrets.GA}}
           echo "Replacing GOOGLE_TAG_ID_PLACEHOLDER with $TAG_ID"
           find /tmp/site_copy -name "*.html" -exec sh -c 'sed "s/GOOGLE_TAG_ID_PLACEHOLDER/$TAG_ID/g" "$1" > "$1.tmp" && mv "$1.tmp" "$1"' _ {} \;
 
       # Step 7: Verify that the Google Tag ID was injected properly
       - name: Verify Tag Injection
         run: |
-          TAG_ID=${{ secrets.GA }}
+          TAG_ID:${{ secrets.GA }}
           grep -r "googletagmanager.com/gtag/js?id=$TAG_ID" /tmp/site_copy || echo "Tag ID not found"
 
       # Step 8: Change permissions of the files in the temp directory
