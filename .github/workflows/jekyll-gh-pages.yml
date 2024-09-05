@@ -47,10 +47,15 @@ jobs:
           echo "Replacing GOOGLE_TAG_ID_PLACEHOLDER with $TAG_ID"
           find /tmp/site_copy -name "*.html" -exec sh -c 'sed "s/GOOGLE_TAG_ID_PLACEHOLDER/$TAG_ID/g" "$1" > "$1.tmp" && mv "$1.tmp" "$1"' _ {} \;
 
-      # Copy the modified files back to the _site directory
-      - name: Copy modified files back to _site
+      # Change permissions of the files in the temp directory
+      - name: Change file permissions in /tmp/site_copy
         run: |
-          cp -r /tmp/site_copy/* ./_site/
+          chmod -R u+w /tmp/site_copy
+
+      # Use rsync to sync modified files back to _site
+      - name: Sync modified files back to _site
+        run: |
+          rsync -av /tmp/site_copy/ ./_site/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
