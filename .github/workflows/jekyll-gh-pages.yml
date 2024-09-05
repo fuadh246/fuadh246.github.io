@@ -39,32 +39,34 @@ jobs:
         run: |
           cp -r ./_site /tmp/site_copy
 
-      # Step 5: Echo the Google Tag ID to confirm it's being retrieved correctly
+      # Step 5: Debug - Echo the Google Tag ID to confirm it's being retrieved correctly (masked in logs)
       - name: Debug - Echo Google Tag ID
         run: |
           echo "Google Tag ID: ${{ secrets.GA }}"
 
-      - name: Check length of Google Tag ID
-        run: |
-          TAG_ID="${{ secrets.GA }}"
-          if [ ${#TAG_ID} -gt 0 ]; then
-            echo "Google Tag ID is accessible and its length is ${#TAG_ID}."
-          else
-            echo "Google Tag ID is not accessible."
-          fi
-
       # Step 6: Inject Google Tag ID into HTML files
-      - name: Inject Google Tag ID
+      - name: Inject Google Tag ID into HTML
         run: |
           TAG_ID=${{ secrets.GA }}
-          echo "Replacing GOOGLE_TAG_ID_PLACEHOLDER with $TAG_ID"
+          echo "Injecting Google Tag ID into HTML files"
           find /tmp/site_copy -name "*.html" -exec sh -c 'sed "s/GOOGLE_TAG_ID_PLACEHOLDER/$TAG_ID/g" "$1" > "$1.tmp" && mv "$1.tmp" "$1"' _ {} \;
 
       # Step 7: Verify that the Google Tag ID was injected properly
       - name: Verify Tag Injection
         run: |
           TAG_ID=${{ secrets.GA }}
-          grep -r "googletagmanager.com/gtag/js?id=${TAG_ID}" /tmp/site_copy || echo "Tag ID not found"
+
+          # Echo file content to debug
+          echo "File content after injection:"
+          cat /tmp/site_copy/index.html | grep "googletagmanager.com/gtag/js?id="
+
+          # Check if the Google Tag ID is in the HTML file
+          if grep -q "googletagmanager.com/gtag/js?id=$TAG_ID" /tmp/site_copy/index.html; then
+            echo "Google Tag ID was successfully injected into the HTML."
+          else
+            echo "Google Tag ID was not injected."
+            exit 1
+          fi
 
       # Step 8: Change permissions of the files in the temp directory
       - name: Change file permissions in /tmp/site_copy
