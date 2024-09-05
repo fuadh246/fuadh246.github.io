@@ -35,6 +35,12 @@ jobs:
         with:
           source: ./
           destination: ./_site
+
+      - name: Inject Google Tag ID
+        run: |
+          TAG_ID=${{ secrets.GOOGLE_TAG_ID }}
+          find ./_site -name "*.html" -exec sed -i "s/GOOGLE_TAG_ID_PLACEHOLDER/$TAG_ID/g" {} +
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
 
